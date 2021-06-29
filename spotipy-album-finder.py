@@ -3,12 +3,10 @@ import requests
 import spotipy
 import json
 
-# Import CLIENT_ID and CLIENT_SECRET from config.txt
-# These can be obtained from developer.spotify.com
-# Insert the 2 codes in the config.txt file
-with open('config.txt', 'r') as config:
-    CLIENT_ID = config.read()
-    CLIENT_SECRET = config.read()
+# Insert your API ID and Secret key here
+CLIENT_ID = ''
+CLIENT_SECRET = ''
+
 
 # POST
 auth_response = requests.post('https://accounts.spotify.com/api/token', {
