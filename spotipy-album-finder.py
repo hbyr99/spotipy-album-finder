@@ -26,12 +26,6 @@ headers = {'Authorization': 'Bearer {token}'.format(token=access_token)}
 # base URL of all Spotify API endpoints
 BASE_URL = 'https://api.spotify.com/v1/'
 
-# Track ID from the URI
-track_id = '6y0igZArWVi6Iz0rj35c1Y'
-
-# actual GET request with proper header
-r = requests.get(BASE_URL + 'audio-features/' + track_id, headers=headers)
-
 # Request user for artist ID
 print("Welcome to album finder!")
 print("Insert the artist ID: ")
