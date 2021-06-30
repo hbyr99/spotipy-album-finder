@@ -20,6 +20,9 @@ jobs:
         
       - name: Install spotipy
         run: python -m pip install --upgrade pip spotipy
+        
+      - name: Install sqlalchemy
+        run: python -m pip install --upgrade pip sqlalchemy
 
       - name: Test with unittest
         run: |
