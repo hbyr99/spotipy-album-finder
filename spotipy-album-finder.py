@@ -47,12 +47,12 @@ for album in album_list['items']:
 
 # creating data frame to add data to
 col_names = ['album', 'release_date']
-albums_df = pd.DataFrame(columns = col_names)
+albums_df = pd.DataFrame(columns=col_names)
 for album in album_list['items']:
     albums_df.loc[len(albums_df.index)] = [
         album['name'], album['release_date']
     ]
-    
+
 print('I got this far!')
 print(albums_df)
 
