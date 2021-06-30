@@ -9,8 +9,8 @@ from sqlalchemy import create_engine
 BASE_URL = 'https://api.spotify.com/v1/'
 
 # Insert your API ID and Secret key here
-CLIENT_ID = '080d31685d824fd8bcc84b364770fd59'
-CLIENT_SECRET = '28810ffc910745e1869f5a243f92e23f'
+CLIENT_ID = ''
+CLIENT_SECRET = ''
 
 
 # POST
