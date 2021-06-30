@@ -1,13 +1,23 @@
 # Import dependencies
+from sqlalchemy import create_engine
 import requests
 import spotipy
 import json
 import pandas as pd
-from sqlalchemy import create_engine
 
-# Insert your API ID and Secret key here
-CLIENT_ID = ''
-CLIENT_SECRET = ''
+# Retrieve API ID and Secret key from config.txt
+# Test 1: config.txt exists
+# Test 2: Client ID is not empty
+# Test 3: Client Secret is not empty
+# Test 4: Client ID is first string in config
+# Test 5: Client Secret is second string in config
+
+def fetch_keys():
+    with open('config.txt', 'r') as config:
+        client_id = config.readline().strip()
+        client_secret = config.readline().strip()
+
+    return (client_id, client_secret)
 
 
 # POST
@@ -21,56 +31,43 @@ def auth_response(identifier, secret):
         'client_id': identifier,
         'client_secret': secret,
     })
-    # return the response in JSON
-    return response.json()
+    # Return the response
+    return response
 
 
 # GET request for albums
-# Test 1: Header has right format
-# Test 2: Albums is not empty
-# Test 3: Return value is in json format
-# Test 4: Albums has status code 200
+# Test 1: Albums is not empty
+# Test 2: Return value is in json format
+# Test 3: Artist ID is valid
+# Test 4: Limit is an unsigned integer between 1 and 50
 
-def album_get(artist_id, limit):
-    # base URL of all Spotify API endpoints
+def album_get():
+    # Base URL of all Spotify API endpoints
     BASE_URL = 'https://api.spotify.com/v1/'
-
-    # save the access token
-    auth_response_data = auth_response(CLIENT_ID, CLIENT_SECRET)
+    
+    # Fetch key for API
+    keys = fetch_keys()
+    
+    # Request Artist ID and album limit from user
+    artist_id = input("Insert the artist ID: ")
+    limit = int(input("How many albums would you like to see? "))
+    
+    # Save the access token
+    auth_response_data = auth_response(keys[0], keys[1]).json()
     access_token = auth_response_data['access_token']
 
-    # send GET request
+    # Send GET request
     headers = {'Authorization': 'Bearer {token}'.format(token=access_token)}
     albums = requests.get(BASE_URL + 'artists/' + artist_id + '/albums',
                           headers=headers,
                           params={'include_groups': 'album', 'limit': limit})
 
-    return albums.json()
-
-
-# User Command Line Interface
-# Test 1: Artist ID is valid
-# Test 2: Limit is an unsigned integer between 1 and 50
-# Test 3: Album list is not empty
-
-def menu():
-    # Request user for artist ID and number of albums to pull
-    print("Welcome to album finder!")
-    artist_id = input("Insert the artist ID: ")
-    limit = int(input("How many albums would you like to see? "))
-
-    # Print album names with release date
-    album_list = album_get(artist_id, limit)
-    for album in album_list['items']:
-        print(album['name'], ' --- ', album['release_date'])
-
-    # Insert album details into DataBase
-    df_to_db(data_to_df(album_list))
+    return albums
 
 
 # Convert data format to DataFrame
-# Test 1: Album list is not empty
-# Test 2: Albums DataFrame is not empty
+# Test 1: albums_df is a DataFrame
+# Test 2: albums_df is not empty
 
 def data_to_df(album_list):
     # Create a dataframe to place the data into
@@ -84,6 +81,22 @@ def data_to_df(album_list):
         ]
 
     return albums_df
+
+# User Command Line Interface
+# Test 1: Album list is not empty
+
+def menu():
+    # Request user for artist ID and number of albums to pull
+    print("Welcome to album finder!")
+
+    # Print album names with release date
+    album_list = album_get().json()
+    for album in album_list['items']:
+        print(album['name'], ' --- ', album['release_date'])
+
+    # Insert album details into DataBase
+    df_to_db(data_to_df(album_list))
+
 
 
 # Insert data into DataBase
