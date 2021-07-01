@@ -5,6 +5,7 @@ import spotipy
 import json
 import pandas as pd
 
+
 # Retrieve API ID and Secret key from config.txt
 # Test 1: config.txt exists
 # Test 2: Client ID is not empty
@@ -44,14 +45,14 @@ def auth_response(identifier, secret):
 def album_get():
     # Base URL of all Spotify API endpoints
     BASE_URL = 'https://api.spotify.com/v1/'
-    
+
     # Fetch key for API
     keys = fetch_keys()
-    
+
     # Request Artist ID and album limit from user
     artist_id = input("Insert the artist ID: ")
     limit = int(input("How many albums would you like to see? "))
-    
+
     # Save the access token
     auth_response_data = auth_response(keys[0], keys[1]).json()
     access_token = auth_response_data['access_token']
@@ -82,6 +83,7 @@ def data_to_df(album_list):
 
     return albums_df
 
+
 # User Command Line Interface
 # Test 1: Album list is not empty
 
@@ -96,7 +98,6 @@ def menu():
 
     # Insert album details into DataBase
     df_to_db(data_to_df(album_list))
-
 
 
 # Insert data into DataBase
