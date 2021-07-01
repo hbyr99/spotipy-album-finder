@@ -3,6 +3,7 @@ from sqlalchemy import create_engine
 import requests
 import spotipy
 import json
+import os
 import pandas as pd
 
 
@@ -85,30 +86,124 @@ def data_to_df(album_list):
 
 
 # User Command Line Interface
-# Test 1: Album list is not empty
 
 def menu():
-    # Request user for artist ID and number of albums to pull
+    # Start main program loop
     print("Welcome to album finder!")
 
-    # Print album names with release date
-    album_list = album_get().json()
+    while True:
+        option = input(
+            """
+What would you like to do?
+(1) -- Read new albums from Spotify
+(2) -- Show albums details stored
+(3) -- Open album information from file
+(4) -- Save album information to file
+(0) -- Quit
+Enter choice: """
+        )
+
+        if option == '0':
+            print("Goodbye!")
+            break
+
+        elif option == '1':
+            # Fetch albums
+            album_list = album_get().json()
+
+            while True:
+                options = input(
+                    """
+Albums fetched!
+Choose action to take:
+(1) -- Show albums fetched (returns here after execution)
+(2) -- Store albums information
+(3) -- Discard albums information
+Enter choice: """
+                )
+
+                if options == '1':
+                    print_albums(album_list)
+
+                elif options == '2':
+                    database_menu(data_to_df(album_list))
+                    break
+
+                elif options == '3':
+                    break
+
+                else:
+                    print("Invalid input!")
+
+        elif option == '2':
+            albums_stored = pd.read_sql_table(
+              'albums',
+              con=create_engine('mysql://root:codio@localhost/album_finder')
+            )
+            print(albums_stored)
+
+        elif option == '3':
+            file_name = input("Enter file name to load album information: ")
+            os.system(
+              'mysql -u root -pcodio -e "CREATE DATABASE IF NOT EXISTS album_finder; "'
+            )
+            os.system("mysql -u root -pcodio album_finder < " + file_name)
+
+        elif option == '4':
+            file_name = input("Enter file name to store album information: ")
+            os.system("mysqldump -u root -pcodio album_finder > " + file_name)
+
+        else:
+            print("Invalid input!")
+
+
+# Print album names with release date
+
+def print_albums(album_list):
     for album in album_list['items']:
         print(album['name'], ' --- ', album['release_date'])
 
-    # Insert album details into DataBase
-    df_to_db(data_to_df(album_list))
+    # Insert album details into Database
+    # database_menu(data_to_df(album_list))
 
 
-# Insert data into DataBase
-# Test 1: Engine is created
-# Test 2: Database exists
-# Test 3: Albums DataFrame is not empty
-# Test 4: Albums data is insert into the database
+# Select data insertion mechanism
+def database_menu(albums_df):
+    # Create databse if non existent
+    os.system(
+      'mysql -u root -pcodio -e "CREATE DATABASE IF NOT EXISTS album_finder; "'
+    )
 
-def df_to_db(albums_df):
+    while True:
+        option = input(
+          "Append(0) or overwrite(1) the album data onto the database? "
+        )
+        if option == '0':
+            database_append(albums_df)
+            break
+        elif option == '1':
+            database_overwrite(albums_df)
+            break
+        else:
+            print("Invalid input! ")
+
+
+# Overwrite data in Database
+# Test 1: Engine is created --- TO DO!
+# Test 4: Albums data is inserted into the database --- TO DO!
+
+def database_overwrite(albums_df):
     engine = create_engine('mysql://root:codio@localhost/album_finder')
     albums_df.to_sql('albums', con=engine, if_exists='replace', index=False)
+
+
+# Append data to Database
+# Test 1: Engine is created --- TO DO!
+# Test 4: Albums data is appended into the database --- TO DO!
+
+def database_append(albums_df):
+    engine = create_engine('mysql://root:codio@localhost/album_finder')
+    albums_df.to_sql('albums', con=engine, if_exists='append', index=False)
 
 
 # Main code
