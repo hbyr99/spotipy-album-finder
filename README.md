@@ -21,9 +21,6 @@ To install the program:
 ```
 git clone https://github.com/hbyr99/spotipy_album_finder/
 ```
-```
-cd spotipy_album_finder
-```
 
 ## Usage
 ### Read albums by specific artist
@@ -59,4 +56,3 @@ cd spotipy_album_finder
 
 ## License
 <a href="license.txt"><img src="https://img.shields.io/badge/License-GNU%20GPLv3-blue"/></a>
-The program is under the GNU GPLv3 license.
