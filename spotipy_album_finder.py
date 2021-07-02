@@ -7,6 +7,7 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 
+
 # Retrieve API ID and Secret key from config.txt
 # Test 1: config.txt exists
 # Test 2: Client ID is not empty
@@ -145,19 +146,23 @@ Enter choice: """)
 
         elif option == '3':
             file_name = input("Enter file name to load album information: ")
+
+            table_name = 'album_finder'
             os.system(
-              'mysql -u root -pcodio -e "CREATE DATABASE IF NOT EXISTS album_finder; "'
+              'mysql -u root -pcodio -e "CREATE DATABASE IF NOT EXISTS '
+              + album_finder + '; "'
             )
             os.system("mysql -u root -pcodio album_finder < " + file_name)
 
         elif option == '4':
             file_name = input("Enter file name to store album information: ")
             os.system("mysqldump -u root -pcodio album_finder > " + file_name)
-            
+
         elif option == '5':
             albums_stored = pd.read_sql_table(
                         'albums',
-                        con=create_engine('mysql://root:codio@localhost/album_finder'))
+                        con=create_engine(
+                          'mysql://root:codio@localhost/album_finder'))
             while True:
                 action = input("""
 Choose action:
@@ -169,11 +174,11 @@ Enter choice: """)
                 if action == '1':
                     barplot(albums_stored, 'artist')
                     break
-                
+
                 elif action == '2':
                     dataframe_mean(albums_stored, 'artist')
                     break
-                
+
                 elif action == '3':
                     dataframe_median(albums_stored, 'artist')
                     break
@@ -221,8 +226,12 @@ def database_menu(albums_df):
 # Test 4: Albums data is inserted into the database --- TO DO!
 
 def database_overwrite(albums_df):
-    engine = create_engine('mysql://root:codio@localhost/album_finder')
-    albums_df.to_sql('albums', con=engine, if_exists='replace', index=False)
+    engine = create_engine(
+      'mysql://root:codio@localhost/album_finder')
+    albums_df.to_sql('albums',
+                     con=engine,
+                     if_exists='replace',
+                     index=False)
 
 
 # Append data to Database
@@ -230,32 +239,48 @@ def database_overwrite(albums_df):
 # Test 4: Albums data is appended into the database --- TO DO!
 
 def database_append(albums_df):
-    engine = create_engine('mysql://root:codio@localhost/album_finder')
-    albums_df.to_sql('albums', con=engine, if_exists='append', index=False)
-    
-#Draw bar graph of artist and albums stored
+    engine = create_engine(
+      'mysql://root:codio@localhost/album_finder')
+    albums_df.to_sql('albums',
+                     con=engine,
+                     if_exists='append',
+                     index=False)
+
+
+# Draw bar graph of artist and albums stored
+
 def barplot(dataframe, column_name):
-    df = pd.DataFrame(dataframe.pivot_table(index=[column_name], aggfunc='size'))
-    fig , ax = plt.subplots()
+    df = pd.DataFrame(
+      dataframe.pivot_table(index=[column_name],
+                            aggfunc='size'))
+    fig, ax = plt.subplots()
     position = 2
     for artist, albums in df.iterrows():
-        ax.bar(x=artist, height = albums, width = 0.8, label = artist)
+        ax.bar(x=artist,
+               height=albums,
+               width=0.8,
+               label=artist)
         ++position
-    
+
     ax.set_xlabel(column_name)
     ax.set_title('Number of ' + column_name)
     plt.show()
 
 
 def dataframe_mean(dataframe, column_name):
-    df = pd.DataFrame(dataframe.pivot_table(index=[column_name], aggfunc='size'))
+    df = pd.DataFrame(
+      dataframe.pivot_table(index=[column_name],
+                            aggfunc='size'))
     print(df.iloc[0].mean())
 
-    
+
 def dataframe_median(dataframe, column_name):
-    df = pd.DataFrame(dataframe.pivot_table(index=[column_name], aggfunc='size'))
+    df = pd.DataFrame(
+      dataframe.pivot_table(index=[column_name],
+                            aggfunc='size'))
     print(df.iloc[0].median())
-    
+
+
 # Main code
 if __name__ == '__main__':
     menu()

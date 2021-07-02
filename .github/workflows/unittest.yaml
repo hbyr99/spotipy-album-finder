@@ -23,7 +23,22 @@ jobs:
         
       - name: Install sqlalchemy
         run: python -m pip install --upgrade pip sqlalchemy
+        
+      - name: Install coverage
+        run: pip install coverage
 
       - name: Test with unittest
         run: |
           python3 -m unittest testSpotipyAlbumFinder.py
+          
+      - name: Check code coverage
+        run: |
+          python3 -m coverage run -m --source=. unittest testSpotifyAlbumFinder.py
+          python3 -m coverage report
+          python3 -m coverage html
+          
+      - name: Archive code coverage HTML report
+        uses: actions/upload-artifact@v2
+        with:
+           name: code-coverage-report
+           path: htmlcov
