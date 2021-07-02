@@ -5,7 +5,7 @@ import spotipy
 import json
 import os
 import pandas as pd
-
+import matplotlib.pyplot as plt
 
 # Retrieve API ID and Secret key from config.txt
 # Test 1: config.txt exists
@@ -73,13 +73,15 @@ def album_get():
 
 def data_to_df(album_list):
     # Create a dataframe to place the data into
-    col_names = ['album', 'release_date']
+    col_names = ['artist', 'album', 'release_date']
     albums_df = pd.DataFrame(columns=col_names)
 
     # Insert the data into the dataframe
     for album in album_list['items']:
         albums_df.loc[len(albums_df.index)] = [
-            album['name'], album['release_date']
+            album['artists'][0]['name'],
+            album['name'],
+            album['release_date']
         ]
 
     return albums_df
@@ -99,6 +101,7 @@ What would you like to do?
 (2) -- Show albums details stored
 (3) -- Open album information from file
 (4) -- Save album information to file
+(5) -- Visualize data
 (0) -- Quit
 Enter choice: """
         )
@@ -112,15 +115,13 @@ Enter choice: """
             album_list = album_get().json()
 
             while True:
-                options = input(
-                    """
+                options = input("""
 Albums fetched!
 Choose action to take:
 (1) -- Show albums fetched (returns here after execution)
 (2) -- Store albums information
 (3) -- Discard albums information
-Enter choice: """
-                )
+Enter choice: """)
 
                 if options == '1':
                     print_albums(album_list)
@@ -152,7 +153,33 @@ Enter choice: """
         elif option == '4':
             file_name = input("Enter file name to store album information: ")
             os.system("mysqldump -u root -pcodio album_finder > " + file_name)
+            
+        elif option == '5':
+            albums_stored = pd.read_sql_table(
+                        'albums',
+                        con=create_engine('mysql://root:codio@localhost/album_finder'))
+            while True:
+                action = input("""
+Choose action:
+(1) -- Bar Chart
+(2) -- Mean number of albums
+(3) -- Median number of albums
 
+Enter choice: """)
+                if action == '1':
+                    barplot(albums_stored, 'artist')
+                    break
+                
+                elif action == '2':
+                    dataframe_mean(albums_stored, 'artist')
+                    break
+                
+                elif action == '3':
+                    dataframe_median(albums_stored, 'artist')
+                    break
+
+                else:
+                    print("Invalid input!")
         else:
             print("Invalid input!")
 
@@ -161,10 +188,11 @@ Enter choice: """
 
 def print_albums(album_list):
     for album in album_list['items']:
-        print(album['name'], ' --- ', album['release_date'])
-
-    # Insert album details into Database
-    # database_menu(data_to_df(album_list))
+        print(album['artists'][0]['name'],
+              ' --- ',
+              album['name'],
+              ' --- ',
+              album['release_date'])
 
 
 # Select data insertion mechanism
@@ -204,8 +232,30 @@ def database_overwrite(albums_df):
 def database_append(albums_df):
     engine = create_engine('mysql://root:codio@localhost/album_finder')
     albums_df.to_sql('albums', con=engine, if_exists='append', index=False)
+    
+#Draw bar graph of artist and albums stored
+def barplot(dataframe, column_name):
+    df = pd.DataFrame(dataframe.pivot_table(index=[column_name], aggfunc='size'))
+    fig , ax = plt.subplots()
+    position = 2
+    for artist, albums in df.iterrows():
+        ax.bar(x=artist, height = albums, width = 0.8, label = artist)
+        ++position
+    
+    ax.set_xlabel(column_name)
+    ax.set_title('Number of ' + column_name)
+    plt.show()
 
 
+def dataframe_mean(dataframe, column_name):
+    df = pd.DataFrame(dataframe.pivot_table(index=[column_name], aggfunc='size'))
+    print(df.iloc[0].mean())
+
+    
+def dataframe_median(dataframe, column_name):
+    df = pd.DataFrame(dataframe.pivot_table(index=[column_name], aggfunc='size'))
+    print(df.iloc[0].median())
+    
 # Main code
 if __name__ == '__main__':
     menu()
