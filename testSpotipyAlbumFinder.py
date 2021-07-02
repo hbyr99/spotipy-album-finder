@@ -1,6 +1,7 @@
 # Import dependencies
 import unittest
 import json
+import matplotlib.pyplot as plt
 import pandas as pd
 from os import path
 from unittest.mock import patch
