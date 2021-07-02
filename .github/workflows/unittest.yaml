@@ -36,7 +36,7 @@ jobs:
           
       - name: Check code coverage
         run: |
-          python3 -m coverage run -m unittest testSpotifyAlbumFinder.py
+          python3 -m coverage run -m unittest --source=. testSpotipyAlbumFinder.py
           python3 -m coverage report
           python3 -m coverage html
           
